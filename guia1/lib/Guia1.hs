@@ -87,7 +87,7 @@ elem' :: (Eq a) => a -> [a] -> Bool
 -- elem' e = foldr ((||) . (==e)) False
 elem' e = foldr (\y rec -> (e == y) || rec) False
 
-(+++) :: [Float] -> [Float] -> [Float]
+(+++) :: (Eq a) => [a] -> [a] -> [a]
 -- (+++) = foldr((:))
 
 (+++) = foldr(\x rec -> x : rec)
