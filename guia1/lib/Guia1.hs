@@ -78,7 +78,11 @@ curry4 f x y z w = f (x, y, z, w)
      explicitarlo. Por lo que hacer curryN es imposible.
 -}
 
--- Ej3
+foldr' :: (a -> b -> b) -> b -> [a] -> b
+foldr' f z [] = z
+foldr' f z (x : xs) = f x (foldr' f z xs)
+
+-- Ej3.1
 
 sum' :: [Float] -> Float
 sum' = foldr (+) 0
@@ -87,7 +91,58 @@ elem' :: (Eq a) => a -> [a] -> Bool
 -- elem' e = foldr ((||) . (==e)) False
 elem' e = foldr (\y rec -> (e == y) || rec) False
 
-(+++) :: (Eq a) => [a] -> [a] -> [a]
--- (+++) = foldr((:))
-
+(+++) :: [a] -> [a] -> [a]
 (+++) = foldr(\x rec -> x : rec)
+
+filter' :: (a -> Bool) -> [a] -> [a]
+filter' p = foldr (\x rec -> if p x then x:rec else rec) []
+
+map' :: (a -> b) -> [a] -> [b]
+map' f = foldr (\x rec -> (f x):rec) []
+
+-- Ej3.2
+mejorSegun :: (a -> a -> Bool) -> [a] -> a
+mejorSegun f = foldr1 (\x y -> if f x y then x else y)
+
+maximum' :: Ord a => [a] -> a
+maximum' = mejorSegun (>)
+
+-- Ej3.3
+sumasParciales :: Num a => [a] -> [a]
+-- sumasParciales [] = []
+-- sumasParciales [x] = [x]
+-- sumasParciales (x:y:xs) = x:sumasParciales ((x+y):xs)
+-- sumasParciales = foldl(\acc x -> if (null acc) then [x] else acc++[((last acc) + x)]) [] # mas ilegible
+sumasParciales = foldl(\acc x -> acc ++ [x + (if null acc then 0 else last acc)]) []
+
+-- Ej3.4
+sumaAlt :: Num a => [a] -> a
+-- sumaAlt = foldr(\x rec -> x-rec) 0
+sumaAlt = foldr (-) 0
+-- sumaAlt [1,2,3] -> 1 - [2, 3] -> 1 - [2 - [3]] -> 1 - [2 - 3 - 0] -> 1 - (2 - (3 - 0))
+
+
+-- Ej3.5
+reverse' :: [a] -> [a]
+reverse' = foldr(\x rec -> rec ++ [x]) []
+
+sumaAltRev :: Num a => [a] -> a
+sumaAltRev = sumaAlt . reverse'
+
+sumaAltRev' :: Num a => [a] -> a
+sumaAltRev' = foldl(\acc x -> x - acc) 0
+
+-- Ej4.1
+intercalar :: a -> [a] -> [[a]]
+intercalar e [] = [[e]]
+intercalar e (x:xs) = (e:x:xs) : [(x:ys) | ys <- intercalar e xs]
+
+quitarElemento :: Eq a => a -> [a] -> [a]
+quitarElemento _ [] = []
+quitarElemento x (y:ys)
+    | x == y = ys
+    | otherwise = y : quitarElemento x ys
+
+permutaciones :: Eq a => [a] -> [[a]]
+permutaciones [] = [[]]
+permutaciones xs = concatMap (\x -> map (x:) (permutaciones (quitarElemento x xs))) xs

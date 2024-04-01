@@ -22,8 +22,34 @@ tests_ej3_1 = TestList [
     TestLabel "test_elem'(2, [3,4,2,1])" (TestCase (assertEqual "elem'(2, [3,4,2,1]) : True" True (elem' 2 [3,4,2,1]))),
     TestLabel "test_elem'(2, [3,2,4,2,2,1])" (TestCase (assertEqual "elem'(2, [3,2,4,2,2,1]) : True" True (elem' 2 [3,2,4,2,2,1]))),
 
-    TestLabel "test_[]+++[]" (TestCase (assertEqual "[]+++[] : []" [] ([] +++ []))),
-    TestLabel "test_[1]+++[1]" (TestCase (assertEqual "[]+++[] : []]" [1,1] ([1] +++ [1])))
+    TestLabel "test_[]+++[]" (TestCase (assertEqual "[]+++[] : []" [1] ([1] +++ []))),
+    TestLabel "test_[]+++[]" (TestCase (assertEqual "[]+++[] : []" [1] ([] +++ [1]))),
+    TestLabel "test_[1]+++[1]" (TestCase (assertEqual "[]+++[] : []]" [1, 1] ([1] +++ [1]))),
+
+    TestLabel "test_filter(> 1, [])" (TestCase (assertEqual "filter(> 1, []) : []" [] (filter' (< 1) []))),
+    TestLabel "test_filter(> 1, [-4,0,1])" (TestCase (assertEqual "filter(> 1, [-4,0,1]) : []" [] (filter' (> 1) [-4, 0, 1]))),
+    TestLabel "test_filter(> 1, [4,0,2,1,5])" (TestCase (assertEqual "filter(> 1, [4,0,2,1,5]) : [4,2,5]" [4,2,5] (filter' (> 1) [4, 0, 2, 1, 5]))),
+
+    TestLabel "test_map((*2), [])" (TestCase (assertEqual "map((*2), []) : []" [] (map' (*2) []))),
+    TestLabel "test_map((*2), [0,1,2])" (TestCase (assertEqual "map((*2), [0,1,2]) : [0,2,4]" [0, 2, 4] (map' (*2) [0, 1, 2]))),
+
+    TestLabel "test_maximum'([-1,8,0,3])" (TestCase (assertEqual "maximum([-1,8,0,3]) : 8" 8 (maximum' [-1, 8, 0, 3]))),
+
+    TestLabel "test_sumasParciales([])" (TestCase (assertEqual "sumasParciales([]) : []" [] (sumasParciales []))),
+    TestLabel "test_sumasParciales([1])" (TestCase (assertEqual "sumasParciales([1]) : [1]" [1] (sumasParciales [1]))),
+    TestLabel "test_sumasParciales([1,4,-1,0,5])" (TestCase (assertEqual "sumasParciales([1,4,-1,0,5]) : [1,4,-1,0,5]" [1,5,4,4,9] (sumasParciales [1,4,-1,0,5]))),
+
+    TestLabel "test_sumasAlt([])" (TestCase (assertEqual "sumasAlt([]) : 0" 0 (sumaAlt []))),
+    TestLabel "test_sumasAlt([1])" (TestCase (assertEqual "sumasAlt([1]) : 1" 1 (sumaAlt [1]))),
+    TestLabel "test_sumasAlt([1,2])" (TestCase (assertEqual "sumasAlt([1,2]) : -1" (-1) (sumaAlt [1,2]))),
+    TestLabel "test_sumasAlt([1,2,3])" (TestCase (assertEqual "sumasAlt([1,2,3]) : 2" 2 (sumaAlt [1,2,3]))),
+    TestLabel "test_sumasAlt([1,2,3,4])" (TestCase (assertEqual "sumasAlt([1,2,3,4]) : -2" (-2) (sumaAlt [1,2,3,4]))),
+    TestLabel "test_sumasAlt([1,2,3,4,5])" (TestCase (assertEqual "sumasAlt([1,2,3,4,5]) : 3" 3 (sumaAlt [1,2,3,4,5]))),
+    TestLabel "test_sumaAlt[11,2,8,5])" (TestCase (assertEqual "sumaAlt[11,2,8,5] : 12" 12 (sumaAlt [11,2,8,5]))),
+
+    TestLabel "test_sumaAltRev[11,2,8,5])" (TestCase (assertEqual "sumaAltRev[11,2,8,5] : -12" (-12) (sumaAltRev [11,2,8,5]))),
+    TestLabel "test_sumaAltRev'[11,2,8,5])" (TestCase (assertEqual "sumaAltRev'[11,2,8,5] : -12" (-12) (sumaAltRev' [11,2,8,5])))
+
     ]
 
 tests_ej4 :: Test
