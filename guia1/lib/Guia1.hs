@@ -145,4 +145,27 @@ quitarElemento x (y:ys)
 
 permutaciones :: Eq a => [a] -> [[a]]
 permutaciones [] = [[]]
-permutaciones xs = concatMap (\x -> map (x:) (permutaciones (quitarElemento x xs))) xs
+permutaciones lista = concatMap(\x -> map (x:) (permutaciones (quitarElemento x lista))) lista
+
+partes :: [a] -> [[a]]
+-- partes [] = [[]]
+-- partes (x:xs) = partes xs ++ map (x:) (partes xs)
+partes = foldr(\x rec -> rec ++ map(x:) rec) [[]]
+
+prefijos :: [a] -> [[a]]
+prefijos l = [ take n l | n <- [0 .. (length l)]]
+
+sinRepetidos :: (Eq a) => [a] -> [a]
+sinRepetidos [] = []
+sinRepetidos (x:xs) | x `elem` xs = sinRepetidos xs
+                    | otherwise = x:sinRepetidos xs
+
+sublistas :: (Eq a) => [a] -> [[a]]
+sublistas [] = [[]]
+sublistas (x:xs) = sinRepetidos (prefijos (x:xs) ++ sublistas xs)
+
+-- sublistas l = sinRepetidos (
+--      [ take n l | n <- [0 .. (length l)]] ++
+--      [ take n l | n <- [0 .. (length l)]] ++
+--      [ drop n l | n <- [0 .. (length l)]]
+--      )
