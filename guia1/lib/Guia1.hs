@@ -329,4 +329,50 @@ trasponer :: [[Int]] -> [[Int]]
 -- trasponer matriz = map head matriz : trasponer (map tail matriz)
 trasponer = foldr (\fila rec -> zipWith (:) fila rec) (repeat [])
 
--- Ej 10
+-- Ej 10.1
+
+stop' :: [Int] -> Bool
+stop' [] = False
+stop' (x:xs) | x > 100 = True
+             | otherwise = stop' xs
+
+next' :: [Int] -> Int
+next' l = length l + 1
+
+generate :: ([a] -> Bool) -> ([a] -> a) -> [a]
+generate stop next = generateFrom stop next []
+
+-- generateFrom :: ([a] -> Bool) -> ([a] -> a) -> [a] -> [a]
+-- generateFrom stop next xs | stop xs = init xs
+--                           | otherwise = generateFrom stop next (xs ++ [next xs])
+
+generateFrom' :: ([a] -> Bool) -> (a -> a) -> [a] -> [a]
+generateFrom' stop next xs | stop xs = init xs
+                           | otherwise = generateFrom' stop next (xs ++ [next (last xs)])
+
+
+generateBase :: ([a] -> Bool) -> a -> (a -> a) -> [a]
+generateBase stop casoBase next  = generateFrom' stop next [casoBase]
+
+-- Ej 10.2
+factorial :: Int -> Int
+factorial 1 = 1
+factorial n = n * factorial (n - 1)
+
+factoriales :: Int -> [Int]
+factoriales n = generate (\x -> length x > n) (\x -> factorial(length x + 1))
+
+-- Ej 10.3
+
+iterateN :: Int -> (a -> a) -> a -> [a]
+-- iterateN n f x = take n (iterate f x)
+iterateN n f casoBase = generateBase (\x -> length x > n) casoBase f
+
+-- Ej 10.4
+generateFrom :: ([a] -> Bool) -> ([a] -> a) -> [a] -> [a]
+
+-- generateFrom stop next xs = init (takeWhile stop (iterate next (xs ++ [next xs])))
+
+generateFrom stop next xs | stop xs = init xs
+                          | otherwise = generateFrom stop next (xs ++ [next xs])
+

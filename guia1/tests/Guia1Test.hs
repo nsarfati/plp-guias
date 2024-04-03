@@ -68,10 +68,20 @@ tests_ej9 = TestList [
 
     ]
 
+tests_ej10 :: Test
+tests_ej10 = TestList [
+    TestLabel "test_generateBase (l -> not (null l) && (last l > 256)) 1 (*2)" (TestCase (assertEqual "generateBase (l -> not (null l) && (last l > 256)) 1 (*2): [1,2,4,8,16,32,64,128,256]" [1,2,4,8,16,32,64,128,256] (generateBase (\l -> not (null l) && (last l > 256)) 1 (*2)))),
+    TestLabel "test_factoriales 10" (TestCase (assertEqual "factoriales 10: [1,2,6,24,120,720,5040,40320,362880,3628800]" [1,2,6,24,120,720,5040,40320,362880,3628800] (factoriales 10))),
+    TestLabel "test_iterateN 5 (*2) 1" (TestCase (assertEqual "iterateN 5 (*2) 1: [1,2,4,8,16]" [1,2,4,8,16] (iterateN 5 (*2) 1)))
+
+    ]
+
+
 main :: IO ()
 main = do
     result2 <- runTestTT tests_ej2
     result3 <- runTestTT tests_ej3_1
     result8 <- runTestTT tests_ej8
     result9 <- runTestTT tests_ej9
-    if failures result2 > 0 || failures result3 > 0 || failures result8 > 0 || failures result9 > 0 then Exit.exitFailure else Exit.exitSuccess
+    result10 <- runTestTT tests_ej10
+    if failures result2 > 0 || failures result3 > 0 || failures result8 > 0 || failures result9 > 0 || failures result10 > 0 then Exit.exitFailure else Exit.exitSuccess
