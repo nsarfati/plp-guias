@@ -1,4 +1,5 @@
 module Guia1 where
+import Data.Foldable (Foldable(fold))
 
 -- Ej1.1
 
@@ -147,14 +148,17 @@ permutaciones :: Eq a => [a] -> [[a]]
 permutaciones [] = [[]]
 permutaciones lista = concatMap(\x -> map (x:) (permutaciones (quitarElemento x lista))) lista
 
+-- Ej4.2
 partes :: [a] -> [[a]]
 -- partes [] = [[]]
 -- partes (x:xs) = partes xs ++ map (x:) (partes xs)
 partes = foldr(\x rec -> rec ++ map(x:) rec) [[]]
 
+-- Ej4.3
 prefijos :: [a] -> [[a]]
 prefijos l = [ take n l | n <- [0 .. (length l)]]
 
+-- Ej4.4
 sinRepetidos :: (Eq a) => [a] -> [a]
 sinRepetidos [] = []
 sinRepetidos (x:xs) | x `elem` xs = sinRepetidos xs
@@ -163,9 +167,166 @@ sinRepetidos (x:xs) | x `elem` xs = sinRepetidos xs
 sublistas :: (Eq a) => [a] -> [[a]]
 sublistas [] = [[]]
 sublistas (x:xs) = sinRepetidos (prefijos (x:xs) ++ sublistas xs)
+-- sublistas lista = foldr(\x rec -> [tail lista] ++ prefijos(head rec)) [[]] lista
 
 -- sublistas l = sinRepetidos (
 --      [ take n l | n <- [0 .. (length l)]] ++
 --      [ take n l | n <- [0 .. (length l)]] ++
 --      [ drop n l | n <- [0 .. (length l)]]
 --      )
+
+-- Ej5
+elementosEnPosicionesPares :: [a] -> [a]
+elementosEnPosicionesPares [] = []
+elementosEnPosicionesPares (x:xs) = if null xs then [x] else x:elementosEnPosicionesPares(tail xs)
+
+-- Esto segun chatgpt???
+elementosEnPosicionesPares' :: [a] -> [a]
+elementosEnPosicionesPares' xs = snd $ foldr (\x (isEven, acc) -> (not isEven, if isEven then x : acc else acc)) (False, []) xs
+
+elementosEnPosicionesPares'' :: [a] -> [a]
+elementosEnPosicionesPares'' = recr(\x xs rec -> if null xs then [x] else x:rec ++ tail xs) []
+
+{-
+     Es recursion estructural?
+     * Devuelve un valor fijo en el caso base. SI
+     * El caso recursivo se escribe usando (cero, una o muchas veces) x. SI
+     * El caso recursivo se escribe usando (cero, una o muchas veces) (g xs),
+     pero sin usar el valor de xs ni otros llamados recursivos. NO
+          Pues se usa el valor de xs en el llamado recursivo preguntando if null xs y al hacer tail xs
+
+     >> NO es recursiones estructural, por lo tanto no se puede escribir con foldr
+-}
+
+entralazar :: [a] -> [a] -> [a]
+entralazar [] = id
+entralazar (x:xs) = \ys ->
+     if null ys then x:entralazar xs []
+     else x:head ys : entralazar xs (tail ys)
+
+{-
+     Es recursion estructural?
+     * Devuelve un valor fijo en el caso base. SI
+     * El caso recursivo se escribe usando (cero, una o muchas veces) x. SI
+     * El caso recursivo se escribe usando (cero, una o muchas veces) (g xs),
+     pero sin usar el valor de xs ni otros llamados recursivos. NO
+          Pues se usa el valor de ys en el llamado recursivo preguntando if null ys y al hacer head + tail xs
+
+     >> NO es recursiones estructural, por lo tanto no se puede escribir con foldr
+-}
+
+-- entralazar' :: [a] -> [a] -> [a]
+-- entralazar' l1 l2 = foldr(\x rec -> if null ys then x:rec else (x : head l2 : rec)) l2
+
+-- Ej 6
+recr :: (a -> [a] -> b -> b) -> b -> [a] -> b
+
+recr _ z [] = z
+recr f z (x : xs) = f x xs (recr f z xs)
+
+-- Ej 6.a
+sacarUna' :: Eq a => a -> [a] -> [a]
+sacarUna' _ [] = []
+sacarUna' e (x:xs) | e == x = xs
+                   | otherwise = x:sacarUna' e xs
+
+sacarUna :: Eq a => a -> [a] -> [a]
+sacarUna e = recr(\x xs rec -> if x == e then xs else x:rec) []
+
+trim = recr (\ x xs rec -> if x == ' ' then rec else x : xs) []
+
+-- Ej 6.b
+{-
+     foldr no es adecuado para implementar sacarUna, pues si bien sacarUna devuelve un valor
+     fijo en el caso base y se utiliza una sola vez la x en el caso recursivo; se utiliza
+     el valor de xs en el llamado recursivo y eso es una indicacion que no se trata de una
+     recursion estructural.
+-}
+
+-- Ej 6.c
+insertarOrdenado' :: Ord a => a -> [a] -> [a]
+insertarOrdenado' e [] = [e]
+insertarOrdenado' e (x:xs) | e <= x = e:x:xs
+                           | otherwise = x:insertarOrdenado' e xs
+
+insertarOrdenado :: Ord a => a -> [a] -> [a]
+insertarOrdenado e = recr(\x xs rec -> if e <= x then e:x:xs else x:rec) [e]
+
+
+-- Ej 7.1
+genLista :: a -> (a -> a) -> Int -> [a]
+genLista inicial f 0 = []
+genLista inicial f cant = inicial : genLista (f inicial) f (cant - 1)
+
+-- Ej 7.2
+desdeHasta :: Int -> Int -> [Int]
+desdeHasta a b | a > b = error "El segundo debe ser mayor al primero"
+desdeHasta a b = genLista a (+1) (b - a)
+
+-- Ej8.1
+mapPares :: (a -> b -> c) -> [(a, b)] -> [c]
+mapPares f = map (uncurry f)
+
+-- Ej8.2
+armarPares :: [a] -> [b] -> [(a, b)]
+armarPares [] _ = []
+armarPares _ [] = []
+armarPares (x:xs) (y:ys) = (x, y):armarPares xs ys
+
+build :: a -> ([b] -> [(a, b)]) -> [b] -> [(a, b)]
+build x rec [] = []
+build x rec (y:ys) = (x, y) : rec ys
+
+armarPares' :: [a] -> [b] -> [(a, b)]
+armarPares' = foldr build (const [])
+
+-- Ej8.3
+mapDoble :: (a -> b -> c) -> [a] -> [b] -> [c]
+mapDoble f l1 l2 = mapPares f (armarPares l1 l2)
+
+-- Ej9.1
+
+-- ChatGPT como se recorren dos listas en simultaneo usando foldr
+-- zipWith' :: (a -> b -> c) -> [a] -> [b] -> [c]
+-- zipWith' f xs ys = foldr combine (const []) xs ys
+--   where
+--     combine x acc [] = []
+--     combine x acc (y:ys) = f x y : acc ys
+
+
+sumarMs :: [Int] -> ([[Int]] -> [[Int]]) -> [[Int]] -> [[Int]]
+sumarMs x_m1 rec [] = []
+sumarMs x_m1 rec (y_m2:m2) = zipWith (+) x_m1 y_m2 : rec m2
+
+sumaMat :: [[Int]] -> [[Int]] -> [[Int]]
+-- sumaMat [] [] = []
+-- sumaMat (x:xs) (y:ys) = zipWith (+) x y : sumaMat xs ys
+sumaMat = foldr sumarMs (const [])
+
+-- Ej9.2
+{-
+[
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+]
+
+[
+    [1, 4, 7],
+    [2, 5, 8],
+    [3, 6, 9]
+]
+-}
+
+trMatriz :: [[Int]] -> ([[Int]] -> [[Int]]) -> [[Int]]
+trMatriz [] rec = []
+trMatriz matriz rec = map head matriz : rec (map tail matriz)
+
+
+trasponer :: [[Int]] -> [[Int]]
+-- trasponer [] = []
+-- trasponer ([]:_) = []
+-- trasponer matriz = map head matriz : trasponer (map tail matriz)
+trasponer = foldr (\fila rec -> zipWith (:) fila rec) (repeat [])
+
+-- Ej 10

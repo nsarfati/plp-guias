@@ -52,13 +52,19 @@ tests_ej3_1 = TestList [
 
     ]
 
-tests_ej4 :: Test
-tests_ej4 = TestList [
+tests_ej8 :: Test
+tests_ej8 = TestList [
+    TestLabel "test_mapPares (x y -> (x + y)) [(1,2), (5,4), (3,2)]" (TestCase (assertEqual "mapPares (x y -> (x + y)) [(1,2), (5,4), (3,2)]: [3, 9, 5]" [3, 9 ,5] (mapPares (\x y -> (x + y)) [(1,2), (5,4), (3,2)]))),
+
+    TestLabel "test_mapDoble (+) [1,2,3] [4,5,6]" (TestCase (assertEqual "mapDoble (+) [1,2,3] [4,5,6]" [5, 7, 9] (mapDoble (+) [1,2,3] [4,5,6])))
 
     ]
 
-tests_ej5 :: Test
-tests_ej5 = TestList [
+tests_ej9 :: Test
+tests_ej9 = TestList [
+    TestLabel "test_sumaMat [ [1,2,3], [4,5,6], [7,8,9] ] [ [1,1,1], [1,1,1], [1,1,1] ]" (TestCase (assertEqual "sumaMat [ [1,2,3], [4,5,6], [7,8,9] ] [ [1,1,1], [1,1,1], [1,1,1] ]: [[2,3,4],[5,6,7],[8,9,10]]" [[2,3,4],[5,6,7],[8,9,10]] (sumaMat [ [1,2,3], [4,5,6], [7,8,9] ] [ [1,1,1], [1,1,1], [1,1,1] ]))),
+
+    TestLabel "test_trasponer [ [1, 2, 3], [4, 5, 6], [7, 8, 9] ]" (TestCase (assertEqual "trasponer [ [1, 2, 3], [4, 5, 6], [7, 8, 9] ]: [ [1, 4, 7], [2, 5, 8], [3, 6, 9] ]" [ [1, 4, 7], [2, 5, 8], [3, 6, 9] ] (trasponer [ [1, 2, 3], [4, 5, 6], [7, 8, 9] ])))
 
     ]
 
@@ -66,6 +72,6 @@ main :: IO ()
 main = do
     result2 <- runTestTT tests_ej2
     result3 <- runTestTT tests_ej3_1
-    result4 <- runTestTT tests_ej4
-    result5 <- runTestTT tests_ej5
-    if failures result2 > 0 || failures result3 > 0 || failures result4 > 0 || failures result5 > 0 then Exit.exitFailure else Exit.exitSuccess
+    result8 <- runTestTT tests_ej8
+    result9 <- runTestTT tests_ej9
+    if failures result2 > 0 || failures result3 > 0 || failures result8 > 0 || failures result9 > 0 then Exit.exitFailure else Exit.exitSuccess
