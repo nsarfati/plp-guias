@@ -43,8 +43,10 @@ max2(x, y) | x >= y = x
           max2Curri x y | x >= y = x
                         | otherwise = y
 
-          normaVectorial :: NO esta currificada
-               normaVectorialCurri x y = sqrt(x^2 + y^2)
+          normaVectorial :: SI/NO esta currificada
+               normaVectorialCurri x y = sqrt(x^2 + y^2) ||
+                    Pues puede pensarse como un punto y tambien puede
+                    pensarse como dos parametros
 
           subtract esta currificada
           predecesor esta currificada
@@ -131,7 +133,8 @@ sumaAltRev :: Num a => [a] -> a
 sumaAltRev = sumaAlt . reverse'
 
 sumaAltRev' :: Num a => [a] -> a
-sumaAltRev' = foldl(\acc x -> x - acc) 0
+-- sumaAltRev' = foldl(\acc x -> x - acc) 0
+sumaAltRev' = foldl (flip (-)) 0
 
 -- Ej4.1
 intercalar :: a -> [a] -> [[a]]
@@ -156,17 +159,34 @@ partes = foldr(\x rec -> rec ++ map(x:) rec) [[]]
 
 -- Ej4.3
 prefijos :: [a] -> [[a]]
-prefijos l = [ take n l | n <- [0 .. (length l)]]
+-- prefijos l = [ take n l | n <- [0 .. (length l)]]
+prefijos = foldl(\rec x -> rec ++ [last rec ++ [x]]) [[]]
+-- (last rec) == [1, 2]
+-- (last rec) ++ [x] == [1,2,3] -> Luego rec ++ [last rec ++ [x]] == [ ... , [1,2,3]]
+-- prefijos = foldr(\x rec -> [] : map(x:) rec) [[]]
+
 
 -- Ej4.4
-sinRepetidos :: (Eq a) => [a] -> [a]
-sinRepetidos [] = []
-sinRepetidos (x:xs) | x `elem` xs = sinRepetidos xs
-                    | otherwise = x:sinRepetidos xs
+
+sufijos :: [a] -> [[a]]
+sufijos = foldr(\x rec -> rec ++ [[x] ++ last rec]) [[]]
+
+
 
 sublistas :: (Eq a) => [a] -> [[a]]
-sublistas [] = [[]]
-sublistas (x:xs) = sinRepetidos (prefijos (x:xs) ++ sublistas xs)
+-- sublistas l = [] : filter (not . null) (concatMap (prefijos) (sufijos l))
+sublistas l = [] : concatMap (tail . prefijos) (sufijos l)
+-- sublistas [] = [[]]
+-- sublistas (x:xs) = sinRepetidos (prefijos (x:xs) ++ sublistas xs)
+-- sublistas lista = foldl(sufijos(lista))
+
+
+-- sinRepetidos :: (Eq a) => [a] -> [a]
+-- sinRepetidos [] = []
+-- sinRepetidos (x:xs) | x `elem` xs = sinRepetidos xs
+--                     | otherwise = x:sinRepetidos xs
+
+
 -- sublistas lista = foldr(\x rec -> [tail lista] ++ prefijos(head rec)) [[]] lista
 
 -- sublistas l = sinRepetidos (
@@ -180,13 +200,6 @@ elementosEnPosicionesPares :: [a] -> [a]
 elementosEnPosicionesPares [] = []
 elementosEnPosicionesPares (x:xs) = if null xs then [x] else x:elementosEnPosicionesPares(tail xs)
 
--- Esto segun chatgpt???
-elementosEnPosicionesPares' :: [a] -> [a]
-elementosEnPosicionesPares' xs = snd $ foldr (\x (isEven, acc) -> (not isEven, if isEven then x : acc else acc)) (False, []) xs
-
-elementosEnPosicionesPares'' :: [a] -> [a]
-elementosEnPosicionesPares'' = recr(\x xs rec -> if null xs then [x] else x:rec ++ tail xs) []
-
 {-
      Es recursion estructural?
      * Devuelve un valor fijo en el caso base. SI
@@ -198,25 +211,28 @@ elementosEnPosicionesPares'' = recr(\x xs rec -> if null xs then [x] else x:rec 
      >> NO es recursiones estructural, por lo tanto no se puede escribir con foldr
 -}
 
-entralazar :: [a] -> [a] -> [a]
-entralazar [] = id
-entralazar (x:xs) = \ys ->
-     if null ys then x:entralazar xs []
-     else x:head ys : entralazar xs (tail ys)
+entrelazar :: [a] -> [a] -> [a]
+-- entralazar [] = id
+-- entralazar (x:xs) = \ys ->
+--      if null ys then x:entralazar xs []
+--      else x:head ys : entralazar xs (tail ys)
+
+entrelazar = foldr(\x rec -> \ys ->
+     if null ys then
+          x:(rec [])
+     else
+          x: head ys : rec (tail ys)
+     ) id
 
 {-
      Es recursion estructural?
      * Devuelve un valor fijo en el caso base. SI
      * El caso recursivo se escribe usando (cero, una o muchas veces) x. SI
      * El caso recursivo se escribe usando (cero, una o muchas veces) (g xs),
-     pero sin usar el valor de xs ni otros llamados recursivos. NO
-          Pues se usa el valor de ys en el llamado recursivo preguntando if null ys y al hacer head + tail xs
+     pero sin usar el valor de xs ni otros llamados recursivos.
+          SI, ya que no se usa xs mas que en el llamado recursivo
 
-     >> NO es recursiones estructural, por lo tanto no se puede escribir con foldr
 -}
-
--- entralazar' :: [a] -> [a] -> [a]
--- entralazar' l1 l2 = foldr(\x rec -> if null ys then x:rec else (x : head l2 : rec)) l2
 
 -- Ej 6
 recr :: (a -> [a] -> b -> b) -> b -> [a] -> b
@@ -268,6 +284,25 @@ mapPares :: (a -> b -> c) -> [(a, b)] -> [c]
 mapPares f = map (uncurry f)
 
 -- Ej8.2
+
+armarParesHoni :: [a] -> [b] -> [(a, b)]
+armarParesHoni = foldr(\x rec -> \ys -> 
+    
+    if (length ys > 0) then
+        (x, head ys) : rec (tail ys)
+    else
+        []
+    ) (const [])
+
+-- es que en realidad cuando le pasaste el ys no te queda una lista de funciones, te queda algo mas tipo
+-- ( (\ys -> (1, head ys) : (\ys -> (2, head ys) : ...) (tail ys) ) ys
+-- o sea, te quedan un montón de pares con cons y al final de todo aparece un cons con rec:
+-- (x,y) : (x,y) : (x,y) : rec (tail ys)
+
+-- si ese rec es el caso base de fold, sucede que rec = const []
+-- entonces terminas haciendo const [] (tail ys) = [] como queríamos
+-- en esencia descartas el tail ys, significa que te sobraron elementos de ys que no los usaste para armar pares porque te quedaste corto de xs
+
 armarPares :: [a] -> [b] -> [(a, b)]
 armarPares [] _ = []
 armarPares _ [] = []
@@ -371,7 +406,7 @@ iterateN n f casoBase = generateBase (\x -> length x > n) casoBase f
 -- Ej 10.4
 generateFrom :: ([a] -> Bool) -> ([a] -> a) -> [a] -> [a]
 
--- generateFrom stop next xs = init (takeWhile stop (iterate next (xs ++ [next xs])))
+-- generateFrom stop next xs = init (takeWhile not stop (iterate next (xs ++ [next xs])))
 
 generateFrom stop next xs | stop xs = init xs
                           | otherwise = generateFrom stop next (xs ++ [next xs])
